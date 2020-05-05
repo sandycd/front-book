@@ -14,17 +14,14 @@ import Layout from '@/layout'
  * a base page that does not have permission requirements
  * all roles can be accessed
  */
-export const constantRoutes = [
-  {
+export const constantRoutes = [{
     path: '/redirect',
     component: Layout,
     hidden: true,
-    children: [
-      {
-        path: '/redirect/:path(.*)',
-        component: () => import('@/views/redirect/index')
-      }
-    ]
+    children: [{
+      path: '/redirect/:path(.*)',
+      component: () => import('@/views/redirect/index')
+    }]
   },
   {
     path: '/login',
@@ -50,42 +47,78 @@ export const constantRoutes = [
     path: '/',
     component: Layout,
     redirect: '/dashboard',
-    children: [
-      {
-        path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
-        name: 'Dashboard',
-        meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
+    children: [{
+      path: 'dashboard',
+      component: () => import('@/views/dashboard/index'),
+      name: 'Dashboard',
+      meta: {
+        title: 'Dashboard',
+        icon: 'dashboard',
+        affix: true
       }
-    ]
+    }]
   }
-  
+
 ]
 
 /**
  * asyncRoutes
  * the routes that need to be dynamically loaded based on user roles
  */
-export const asyncRoutes = [
-  {
-    path:'/book',
-    name:'图书管理',
-    component:Layout,
-    redirect:'/book/create',
-    meta:{"title":'图书管理',icon:"documentation",roles:["admin"]},
-    children:[{
-      path:'/book/create',
-      component:()=>import('@/views/book/create'),
-      meta:{"title":'上传图书',icon:"edit",roles:["admin"]}
+export const asyncRoutes = [{
+    path: '/book',
+    name: '图书管理',
+    component: Layout,
+    redirect: '/book/create',
+    meta: {
+      "title": '图书管理',
+      icon: "documentation",
+      roles: ["admin"]
+    },
+    children: [{
+      path: '/book/create',
+      name:'BookCreate',
+      component: () => import('@/views/book/create'),
+      meta: {
+        "title": '上传图书',
+        icon: "edit",
+        roles: ["admin"]
+      }
+    }, {
+      path: '/book/edit',
+      name:'BookEdit',
+      component: () => import('@/views/book/edit'),
+      meta: {
+        "title": '编辑图书',
+        icon: "edit",
+        roles: ["admin"],
+        hidden:true,
+        activeMenu: '/book/list'
+      }
+    }, {
+      path: '/book/list',
+      name:'BookList',
+      component: () => import('@/views/book/list'),
+      meta: {
+        "title": '图书列表',
+        icon: "list",
+        roles: ["admin"]
+      }
     }]
   },
 
-  { path: '*', redirect: '/404', hidden: true }
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
+  }
 ]
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: () => ({
+    y: 0
+  }),
   routes: constantRoutes
 })
 
