@@ -99,14 +99,26 @@
 
               </el-row>
               <el-row>
-              <el-col :span="24">
-              <el-form-item label-width="60px" label="封面">
-                <a v-if="postForm.cover" :href="postForm.href" target="_blank">
-                  <img :src="postForm.cover" class="preview-img">
-                </a>
-                <span v-else>无</span>
-              </el-form-item>
-              </el-col>
+                <el-col :span="24">
+                  <el-form-item label-width="60px" label="封面">
+                    <a v-if="postForm.cover" :href="postForm.href" target="_blank">
+                      <img :src="postForm.cover" class="preview-img">
+                    </a>
+                    <span v-else>无</span>
+                  </el-form-item>
+                </el-col>
+                
+              </el-row>
+              <el-row>
+                <el-col :span="24">
+                  <el-form-item label-width="60px" label="目录">
+                    <div
+                    v-if="postForm.content&&postForm.content.length>0" class="contents-wrapper">
+                    <el-tree :data="contentsTree" @node-click="onContentClick"></el-tree>
+                    </div>
+                  </el-form-item>
+                </el-col>
+                
               </el-row>
             </div>
           </el-col>
