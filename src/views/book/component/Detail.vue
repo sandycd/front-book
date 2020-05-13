@@ -128,15 +128,20 @@
   </div>
 </template>
 <script>
+import MDinput from '@/components/MDinput'
+import {validURL} from '@/utils/validate'
+import {createBook,updateBook,getBook} from '@/api/book'
 import Sticky from '../../../components/Sticky/index'
 import Warning from './warning'
 import EbookUpload from '../../../components/EbookUpload/index'
+
 export default {
   name: 'Detail',
   components: {
     Sticky,
     Warning,
-    EbookUpload
+    EbookUpload,
+    MDinput
   },
   props: {
     isEdit: Boolean
@@ -153,10 +158,18 @@ export default {
   methods: {
   
     submitForm() {
-      this.loading = true
-      setTimeout(() => {
-        this.loading = false
-      }, 1000)
+      this.$refs.postForm.validate(valid=>{
+        if(valid){
+          this.loading = true;
+          const book = Object.assign({},this.postForm)
+          delete book.contents;
+          if(!this.isEdit){
+            createBook(book).
+          }
+        }
+      })
+      
+
     },
     onUploadSuccess(data){
       this.setData(data)
