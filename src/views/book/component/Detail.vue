@@ -151,11 +151,78 @@ export default {
   },
 
   methods: {
+  
     submitForm() {
       this.loading = true
       setTimeout(() => {
         this.loading = false
       }, 1000)
+    },
+    onUploadSuccess(data){
+      this.setData(data)
+    },
+    setData(data) {
+        const {
+          title,
+          author,
+          publisher,
+          language,
+          rootFile,
+          cover,
+          originalName,
+          url,
+          contents,
+          contentsTree,
+          fileName,
+          coverPath,
+          filePath,
+          unzipPath
+        } = data
+        this.postForm = {
+          title,
+          author,
+          publisher,
+          language,
+          rootFile,
+          cover,
+          url,
+          originalName,
+          contents,
+          fileName,
+          coverPath,
+          filePath,
+          unzipPath
+        }
+        this.fileList = [{ name: originalName, url }]
+        this.contentsTree = contentsTree
+    },
+    onUploadRemove(){
+      this.toDefault()
+    },
+    toDefault(){
+      const defaultForm = {
+            title: '', // 书名
+            author: '', // 作者
+            publisher: '', // 出版社
+            language: '', // 语种
+            rootFile: '', // 根文件路径
+            cover: '', // 封面图片URL
+            coverPath: '', // 封面图片路径
+            fileName: '', // 文件名
+            originalName: '', // 文件原始名称
+            filePath: '', // 文件所在路径
+            unzipPath: '', // 解压文件所在路径
+            contents: [] // 目录
+        }
+      this.postFrom= Object.assign({},defaultForm);
+      this.fileList = [];
+      this.contentsTree = []
+    },
+    onContentClick(){
+      const {text} = data;
+      if(text){
+        window.open(text)
+      }
     }
   }
 }
