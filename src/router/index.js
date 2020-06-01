@@ -76,7 +76,7 @@ export const asyncRoutes = [{
       roles: ["admin"]
     },
     children: [{
-      path: '/book/create',
+      path: 'create',
       name:'BookCreate',
       component: () => import('@/views/book/create'),
       meta: {
@@ -85,18 +85,18 @@ export const asyncRoutes = [{
         roles: ["admin"]
       }
     }, {
-      path: '/book/edit',
+      path: 'edit/:fileName(\\w+)',
       name:'BookEdit',
       component: () => import('@/views/book/edit'),
+      hidden:true,
       meta: {
         "title": '编辑图书',
         icon: "edit",
         roles: ["admin"],
-        hidden:true,
         activeMenu: '/book/list'
       }
     }, {
-      path: '/book/list',
+      path: 'list',
       name:'BookList',
       component: () => import('@/views/book/list'),
       meta: {

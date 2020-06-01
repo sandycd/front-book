@@ -13,6 +13,7 @@
             <ebook-upload
               v-model="postForm.image_url"
               :file-list = "fileList"
+              
               :disabled ="isEdit"
               @onSuccess="onUploadSuccess"
               @onRemove="onUploadRemove"
@@ -134,7 +135,24 @@ import {createBook,updateBook,getBook} from '@/api/book'
 import Sticky from '../../../components/Sticky/index'
 import Warning from './warning'
 import EbookUpload from '../../../components/EbookUpload/index'
+import steps from './steps'
+import Driver from 'driver.js' // import driver.js
+import 'driver.js/dist/driver.min.css' // import driver.js css
 
+const defaultForm = {
+      title: '', // 书名
+      author: '', // 作者
+      publisher: '', // 出版社
+      language: '', // 语种
+      rootFile: '', // 根文件路径
+      cover: '', // 封面图片URL
+      coverPath: '', // 封面图片路径
+      fileName: '', // 文件名
+      originalName: '', // 文件原始名称
+      filePath: '', // 文件所在路径
+      unzipPath: '', // 解压文件所在路径
+      contents: [] // 目录
+}
 export default {
   name: 'Detail',
   components: {
@@ -143,18 +161,71 @@ export default {
     EbookUpload,
     MDinput
   },
-  props: {
-    isEdit: Boolean
-  },
+    props: {
+      isEdit: {
+        type: Boolean,
+        default: false
+      }
+    },
   data() {
-    return {
-      loading: false,
-      postForm: {
-        status: 'deleted'
+    const validateRequire= (rule, value, callback) =>{
+      if(value == ''){
+        this.$message({
+          message:rule.field +'为必传项',
+          type:'error'
+        })
+        callback(new Error(rule.field + '为必传项'))
+      }else{
+        callback()
       }
     }
+    const validateSourceUri = (rule, value, callback) =>{
+      if(value){
+        if(validURL(value)){
+          callback()
+        }else{
+          this.$message({
+            message:'外链url填写不正确',
+            type:'error'
+          })
+          callback(new Error('外链url填写不正确'))
+        }
+      }else{
+        callback()
+      }
+    }
+    return {
+      postForm: Object.assign({},defaultForm),
+      loading: false,
+      useListOptions: [],
+      rules:{
+        imgage_uri: [{validator:validateRequire}],
+        title: [{validator:validateRequire}],
+        content: [{validator:validateRequire}],
+        source_uri: [{validator:validateSourceUri,trriger:"blur"}]
+      },
+      temRoute: {},
+      fileList: [],
+      contentsTree: [],
+      labelWidth: '120px',
+      driver:null
+    }
   },
-
+  created() {
+    if(this.isEdit){
+      const fileName = this.$route.params && this.$route.params.fileName
+      this.getBookData(fileName)
+    }
+    this.tempRoute = Object.assign({},this.$route)
+  },
+  mounted() {
+    this.driver = new Driver({
+      nextBtnText: '下一个',
+      prevBtnText: '上一个',
+      closeBtnText: '关闭',
+      doneBtnText: '完成'
+    })
+  },
   methods: {
   
     submitForm() {
@@ -164,78 +235,100 @@ export default {
           const book = Object.assign({},this.postForm)
           delete book.contents;
           if(!this.isEdit){
-            createBook(book).
+            createBook(book).then(respone=>{
+              console.log('creakbook',respone);
+              this.loading =false;
+              this.$notify({
+                title:'成功',
+                message:respone.msg,
+                type:'success',
+                duration:2000
+              })
+              this.toDafault();
+
+            }).catch(()=>{
+              this.loading =false;
+            })
+          }else{
+            updateBook(book).then(respone=>{
+              console.log('updateBook',respone);
+              this.loading = false;
+              this.$notify({
+                title: '成功',
+                message: respone.msg,
+                type: 'success',
+                duration: 2000
+              })
+            }).catch(() => {
+              this.loading = false;
+            })
           }
+        } else {
+          return false
         }
       })
-      
-
     },
-    onUploadSuccess(data){
+    getBookData(fileName) {
+      getBook(fileName).then(respone => {
+        this.setData(respone.msg)
+      })
+    },
+
+    onUploadSuccess(data) {
       this.setData(data)
     },
     setData(data) {
-        const {
-          title,
-          author,
-          publisher,
-          language,
-          rootFile,
-          cover,
-          originalName,
-          url,
-          contents,
-          contentsTree,
-          fileName,
-          coverPath,
-          filePath,
-          unzipPath
-        } = data
-        this.postForm = {
-          title,
-          author,
-          publisher,
-          language,
-          rootFile,
-          cover,
-          url,
-          originalName,
-          contents,
-          fileName,
-          coverPath,
-          filePath,
-          unzipPath
-        }
-        this.fileList = [{ name: originalName, url }]
-        this.contentsTree = contentsTree
+      const {
+        title,
+        author,
+        publisher,
+        language,
+        rootFile,
+        cover,
+        originalName,
+        url,
+        contents,
+        contentsTree,
+        fileName,
+        coverPath,
+        filePath,
+        unzipPath
+      } = data
+      this.postForm = {
+        title,
+        author,
+        publisher,
+        language,
+        rootFile,
+        cover,
+        url,
+        originalName,
+        contents,
+        fileName,
+        coverPath,
+        filePath,
+        unzipPath
+      }
+      this.fileList = [{ name: originalName, url }]
+      this.contentsTree = contentsTree
     },
-    onUploadRemove(){
+    onUploadRemove() {
       this.toDefault()
     },
-    toDefault(){
-      const defaultForm = {
-            title: '', // 书名
-            author: '', // 作者
-            publisher: '', // 出版社
-            language: '', // 语种
-            rootFile: '', // 根文件路径
-            cover: '', // 封面图片URL
-            coverPath: '', // 封面图片路径
-            fileName: '', // 文件名
-            originalName: '', // 文件原始名称
-            filePath: '', // 文件所在路径
-            unzipPath: '', // 解压文件所在路径
-            contents: [] // 目录
-        }
-      this.postFrom= Object.assign({},defaultForm);
-      this.fileList = [];
+    toDefault() {
+      this.postFrom = Object.assign({}, defaultForm)
+      this.fileList = []
       this.contentsTree = []
     },
-    onContentClick(){
-      const {text} = data;
-      if(text){
+    onContentClick(data) {
+      const { text } = data
+      if (text) {
         window.open(text)
       }
+    },
+    showGuide() {
+      this.driver.defineSteps(steps)
+      this.driver.start()
     }
   }
 }
